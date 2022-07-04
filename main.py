@@ -14,13 +14,11 @@ document = fitz.Document(file_path)
 
 #extract text from the first page of the document
 text = ""
-for index in range(len(document)):
-    page = document[index]
+for page in document:
     text = text + page.get_text("text", None, 1, None, False)
-output = {}
 
 #function for using regular expression to search the text that was extracted from the document.
-def search_text(pattern: str):
+def search_text(pattern: str, text: str):
     match = re.search(pattern, text)
     if match is None:
         return ""
@@ -41,7 +39,7 @@ def save_image(page: int, img_number: int, name: str):
 if text.find("T-score") != -1:
     #template file with regular expression strings
     with open("DXABMD.json") as template:
-        output = json.load(template)
+        input = json.load(template)
     template.close()
 
     save_image(0, 0, "BMDTScoreGraph")
@@ -58,7 +56,7 @@ if text.find("T-score") != -1:
 # If the text includes Body Composition then the pdf is DXA scan result page 2
 elif text.find("Body Composition Results") != -1:
     with open('DXABodyComp.json') as template:
-        output = json.load(template)
+        input = json.load(template)
     template.close()
 
     save_image(0, 0, "TotalBodyPercentFatGraph")
@@ -80,12 +78,12 @@ elif text.find("Body Composition Results") != -1:
 
 elif text.find("DXA Results Summary:") != -1:
     with open("DXABodyTable.json") as template:
-        output = json.load(template)
+        input = json.load(template)
     template.close()
 
 elif text.find("SUCCESS HUB") != -1:
     with open("Fit3d.json") as template:
-        output = json.load(template)
+        input = json.load(template)
     template.close()
 
     save_image(0, 0, "FrontBody")
@@ -103,11 +101,12 @@ else:
     print("not a valid pdf file.")
     exit()
 
-#go through output and change all values from <regular expression string> to search_text(<regular expression string>).
-for i in output:
-    output[i] = search_text(output[i])
+#go through template and copy all values from <regular expression string> to search_text(<regular expression string>) in output.
+output = {}
+for i in input:
+    output[i] = search_text(input[i], text)
 
 #export output to json file.
 with open ("output/output.json", "w") as outfile:
-        json.dump(output, outfile)
+    json.dump(output, outfile)
 outfile.close()
