@@ -12,7 +12,7 @@ file_path = askopenfilename()
 #open the document with pymupdf
 document = fitz.Document(file_path)
 
-#extract text from the first page of the document
+#extract all text from the document
 text = ""
 for page in document:
     text = text + page.get_text("text", None, 1, None, False)
